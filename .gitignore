@@ -18,3 +18,5 @@ htmlcov/
 # Generated files
 *.svg
 *.puml
+
+npm_comparison/
