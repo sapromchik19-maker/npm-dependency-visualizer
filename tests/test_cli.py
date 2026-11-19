@@ -91,7 +91,6 @@ class TestArguments(unittest.TestCase):
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("--output", result.stderr)
 
-
     def test_successful_load_order(self):
         """Проверить успешный вывод порядка загрузки."""
         result = subprocess.run(
@@ -111,6 +110,7 @@ class TestArguments(unittest.TestCase):
         self.assertEqual(result.returncode, 0)
         self.assertIn("Порядок загрузки:", result.stdout)
         self.assertIn("D -> E -> B -> C -> A", result.stdout)
+
 
 if __name__ == "__main__":
     unittest.main()

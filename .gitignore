@@ -1,22 +1,17 @@
 # Python
 __pycache__/
 *.py[cod]
-*.pyo
-
-# Virtual environment
 .venv/
-venv/
 
 # PyCharm
 .idea/
 
-# Test and coverage cache
-.pytest_cache/
-.coverage
-htmlcov/
+# Local npm installation
+npm_comparison/
 
-# Generated files
+# PlantUML binary
+plantuml.jar
+
+# Generated diagrams
 *.svg
 *.puml
-
-npm_comparison/
