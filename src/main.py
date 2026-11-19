@@ -1,7 +1,9 @@
 import argparse
 from pathlib import Path
 from urllib.parse import urlparse
-from src.npm_api import get_dependencies
+from src.graph import build_graph
+from src.test_repository import load_test_repository
+from src.npm_graph import build_npm_graph
 
 def validate_arguments(args):
     """Проверить параметры командной строки."""
@@ -44,12 +46,36 @@ def main():
         raise SystemExit(1) from error
 
 
+
     if args.test_mode:
-        print("Тестовый режим будет реализован на этапе 3.")
+        try:
+            repository = load_test_repository(args.repository)
+
+            if args.package not in repository:
+                raise ValueError(
+                    f"Пакет {args.package} не найден"
+                )
+
+            graph = build_graph(
+                args.package,
+                lambda name: repository[name]
+            )
+        except ValueError as error:
+            print(f"Ошибка: {error}")
+            raise SystemExit(1) from error
+
+        print("Граф зависимостей:")
+
+        for package, dependencies in graph.items():
+            names = ", ".join(dependencies)
+            print(f"{package}: {names or '(нет зависимостей)'}")
+
         return
 
+
+
     try:
-        dependencies = get_dependencies(
+        graph = build_npm_graph(
             args.repository,
             args.package,
             args.version
@@ -58,15 +84,18 @@ def main():
         print(f"Ошибка: {error}")
         raise SystemExit(1) from error
 
-    print(f"Прямые зависимости {args.package}@{args.version}:")
+    print("Полный граф npm-зависимостей:")
 
-    if not dependencies:
-        print("Прямые зависимости отсутствуют.")
-        return
+    for package, dependencies in graph.items():
+        name, version = package
 
-    for name, version in sorted(dependencies.items()):
-        print(f"{name}: {version}")
+        print(f"\n{name}@{version}")
 
+        if not dependencies:
+            print("  (нет зависимостей)")
+
+        for dep_name, dep_version in dependencies:
+            print(f"  -> {dep_name}@{dep_version}")
 
 
 if __name__ == "__main__":

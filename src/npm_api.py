@@ -40,3 +40,31 @@ def get_dependencies(repository, package, version):
         raise ValueError("Некорректный формат зависимостей")
 
     return dependencies
+
+
+def get_package_versions(repository, package):
+    """Получить список опубликованных версий npm-пакета."""
+    package_path = quote(package, safe="@")
+    url = f"{repository.rstrip('/')}/{package_path}"
+
+    try:
+        with urlopen(url, timeout=10) as response:
+            data = json.load(response)
+    except HTTPError as error:
+        raise ValueError(
+            f"Ошибка HTTP {error.code} при получении версий"
+        ) from error
+    except (URLError, OSError, ValueError) as error:
+        raise ValueError(
+            f"Не удалось получить версии: {error}"
+        ) from error
+
+    if not isinstance(data, dict):
+        raise ValueError("Некорректный ответ npm Registry")
+
+    versions = data.get("versions")
+
+    if not isinstance(versions, dict):
+        raise ValueError("Список версий отсутствует")
+
+    return list(versions)

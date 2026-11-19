@@ -62,3 +62,33 @@ python -m unittest discover -s tests -v
 и некорректных ответов сервера.
 
 Для проверки используются автоматические тесты unittest.
+## Этап 3. Построение графа зависимостей
+
+Реализован обход графа зависимостей с помощью алгоритма BFS без рекурсии.
+
+Основные возможности:
+- Построение графа прямых и транзитивных зависимостей.
+- Обработка циклических зависимостей.
+- Работа с тестовым JSON-репозиторием.
+- Получение зависимостей реальных npm-пакетов.
+- Выбор версий для точных требований и диапазонов `^` и `~`.
+
+Поддержка npm SemVer пока ограничена. Сложные диапазоны версий могут потребовать дополнительной обработки.
+
+### Запуск в тестовом режиме
+
+```powershell
+python -m src.main --package A --repository data/test_graph.json --version 1.0.0 --output graph.svg --test-mode
+```
+
+### Запуск с npm Registry
+
+```powershell
+python -m src.main --package is-odd --repository https://registry.npmjs.org --version 3.0.1 --output graph.svg
+```
+
+### Запуск тестов
+
+```powershell
+python -m unittest discover -s tests -v
+```
