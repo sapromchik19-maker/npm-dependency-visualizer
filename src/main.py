@@ -1,7 +1,7 @@
 import argparse
 from pathlib import Path
 from urllib.parse import urlparse
-
+from src.npm_api import get_dependencies
 
 def validate_arguments(args):
     """Проверить параметры командной строки."""
@@ -43,9 +43,30 @@ def main():
         print(f"Ошибка: {error}")
         raise SystemExit(1) from error
 
-    print("Параметры программы:")
-    for key, value in vars(args).items():
-        print(f"{key}: {value}")
+
+    if args.test_mode:
+        print("Тестовый режим будет реализован на этапе 3.")
+        return
+
+    try:
+        dependencies = get_dependencies(
+            args.repository,
+            args.package,
+            args.version
+        )
+    except ValueError as error:
+        print(f"Ошибка: {error}")
+        raise SystemExit(1) from error
+
+    print(f"Прямые зависимости {args.package}@{args.version}:")
+
+    if not dependencies:
+        print("Прямые зависимости отсутствуют.")
+        return
+
+    for name, version in sorted(dependencies.items()):
+        print(f"{name}: {version}")
+
 
 
 if __name__ == "__main__":
