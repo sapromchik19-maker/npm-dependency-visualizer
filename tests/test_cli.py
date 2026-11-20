@@ -2,8 +2,11 @@ import subprocess
 import sys
 import unittest
 from argparse import Namespace
+from contextlib import redirect_stdout
+from io import StringIO
+from unittest.mock import patch
 
-from src.main import validate_arguments
+from src.main import main, validate_arguments
 
 
 class TestArguments(unittest.TestCase):
@@ -92,24 +95,27 @@ class TestArguments(unittest.TestCase):
         self.assertIn("--output", result.stderr)
 
     def test_successful_load_order(self):
-        """Проверить успешный вывод порядка загрузки."""
-        result = subprocess.run(
-            [
-                sys.executable, "-m", "src.main",
-                "--package", "A",
-                "--repository", "data/acyclic_graph.json",
-                "--version", "1.0.0",
-                "--output", "graph.svg",
-                "--test-mode", "--load-order"
-            ],
-            capture_output=True,
-            text=True,
-            check=False
-        )
+        """Проверить порядок без настоящего PlantUML."""
+        arguments = [
+            "src.main",
+            "--package", "A",
+            "--repository", "data/acyclic_graph.json",
+            "--version", "1.0.0",
+            "--output", "graph.svg",
+            "--test-mode",
+            "--load-order"
+        ]
+        output = StringIO()
 
-        self.assertEqual(result.returncode, 0)
-        self.assertIn("Порядок загрузки:", result.stdout)
-        self.assertIn("D -> E -> B -> C -> A", result.stdout)
+        with patch.object(sys, "argv", arguments):
+            with patch("src.main.save_graph_image") as mock_svg:
+                with redirect_stdout(output):
+                    main()
+
+        text = output.getvalue()
+        self.assertIn("Порядок загрузки:", text)
+        self.assertIn("D -> E -> B -> C -> A", text)
+        mock_svg.assert_called_once()
 
 
 if __name__ == "__main__":
